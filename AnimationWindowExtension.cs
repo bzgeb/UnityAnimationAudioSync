@@ -9,6 +9,7 @@ public class AnimationWindowExtension : EditorWindow {
     public static AudioClip lastAudioClip;
     public static AudioClip activeAudioClip;
     bool isPlaying;
+    bool wasPlaying;
 
     static Texture2D waveform1;
     static Texture2D waveform2;
@@ -53,12 +54,12 @@ public class AnimationWindowExtension : EditorWindow {
             System.Int32 frequency = (System.Int32)GetFrequency.Invoke( null, new System.Object[] { activeAudioClip } );
             System.Int32 samples = (System.Int32)(frequency * time);
 
-            // Set sample position if audio is playing
-            if ( isPlaying ) {
+            // Set sample position if audio is playing and wasn't playing last frame
+            if ( isPlaying && !wasPlaying ) {
                 MethodInfo SetClipSamplePosition = AudioUtilClass.GetMethod( "SetClipSamplePosition", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, new System.Type[] { typeof(UnityEngine.AudioClip), typeof(System.Int32) }, null );
                 SetClipSamplePosition.Invoke( null, new System.Object[] { activeAudioClip, samples } );
+                wasPlaying = true;
             }
-
 
             // Set the line points and Repaint
             float percent = (float)samples / (float)activeAudioClip.samples;
@@ -77,6 +78,10 @@ public class AnimationWindowExtension : EditorWindow {
             }
 
             lastTime = time;
+        }
+
+        if ( !isPlaying ) {
+            wasPlaying = false;
         }
     }
 
